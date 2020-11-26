@@ -1,5 +1,4 @@
 const parser = require('./index.js')
-const fs = require('fs')
 
 /** add some names | https://observablehq.com/@spencermountain/compromise-plugins */
 const testPlugin = function (Doc, world) {
@@ -10,44 +9,36 @@ const testPlugin = function (Doc, world) {
 }
 
 const options = {
-  url: 'https://www.theguardian.com/commentisfree/2020/jul/08/the-guardian-view-on-rishi-sunak-right-words-right-focus-wrong-policies',
-  enabled: ['lighthouse', 'screenshot', 'links', 'sentiment', 'entities', 'spelling', 'keywords'],
+  url:
+    'https://www.theguardian.com/commentisfree/2020/jul/08/the-guardian-view-on-rishi-sunak-right-words-right-focus-wrong-policies',
+  enabled: [
+    'lighthouse',
+    'screenshot',
+    'links',
+    'sentiment',
+    'entities',
+    'spelling',
+    'keywords'
+  ],
   nlp: {
     plugins: [testPlugin]
   }
 }
 
-parser.parseArticle(options)
-  .then(function (article) {
-    const response = {
-      title: article.title.text,
-      excerpt: article.excerpt,
-      metadescription: article.meta.description.text,
-      url: article.url,
-      sentiment: { score: article.sentiment.score, comparative: article.sentiment.comparative },
-      keyphrases: article.processed.keyphrases,
-      keywords: article.processed.keywords,
-      people: article.people,
-      orgs: article.orgs,
-      places: article.places,
-      text: {
-        raw: article.processed.text.raw,
-        formatted: article.processed.text.formatted,
-        html: article.processed.text.html
-      },
-      spelling: article.spelling,
-      meta: article.meta,
-      links: article.links,
-      lighthouse: article.lighthouse
-    }
-
-    const json = JSON.stringify(response, null, 4)
-    fs.writeFile('testresults.json', json, 'utf8', function (err) {
-      if (err) throw err
-      console.log('Results written to testresults.json')
+async function test () {
+  const Axios = require('axios')
+  const url =
+    'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/search'
+  const page = (await Axios.get(url)).data
+  // console.log(page)
+  parser
+    .parseArticleFromHtmlString(page, url, options)
+    .then(function (article) {
+      console.log(article.processed.text)
     })
-  })
-  .catch(function (error) {
-    console.log(error.message)
-    console.log(error.stack)
-  })
+    .catch(function (error) {
+      console.log(error.message)
+      console.log(error.stack)
+    })
+}
+test()
