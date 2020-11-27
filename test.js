@@ -34,7 +34,7 @@ async function test () {
   parser
     .parseArticleFromHtmlString(page, url, options)
     .then(function (article) {
-      console.log(article.processed.text)
+      console.log(article.rawText)
     })
     .catch(function (error) {
       console.log(error.message)

@@ -49,16 +49,13 @@ module.exports.parseArticleFromHtmlString = async function (page, url, options) 
 
 const articleParserFromHtmlString = async function (page, url, options) {
   const article = {
-    url
+    url,
+    page
   }
-  article.meta = {}
-  article.meta.title = {}
-  article.links = []
-  article.title = {}
-  article.excerpt = ''
-  article.processed = {}
-  article.processed.text = {}
-  article.lighthouse = {}
+  article.title = ''
+  article.text = ''
+  article.rawText = ''
+  article.cleanHtml = ''
 
   const pathArray = article.url.split('/')
   const protocol = pathArray[0]
@@ -80,21 +77,11 @@ const articleParserFromHtmlString = async function (page, url, options) {
   await helpers.prepDocument(dom.window.document)
 
   // Title
-  article.title.text = await getTitle(dom.window.document, options.title)
+  article.title = await getTitle(dom.window.document, options.title)
+  article.cleanHtml = helpers.grabArticle(dom.window.document).innerHTML
 
-  const content = helpers.grabArticle(dom.window.document).innerHTML
-
-  // Turn relative links into absolute links & assign processed html
-  article.processed.html = await absolutify(content, article.baseurl)
-
-  // Formatted Text (including new lines and spacing for spell check)
-  article.processed.text.formatted = await getFormattedText(article.processed.html, article.title.text, article.baseurl, options.htmltotext)
-  // HTML Text (spans on each line for spell check line numbers)
-  article.processed.text.html = await getHtmlText(article.processed.text.formatted)
-
-  // Raw Text (text prepared for keyword analysis & named entity recongnition)
-  article.processed.text.raw = await getRawText(article.processed.html)
-
+  article.text = await getFormattedText(article.cleanHtml, article.title, article.baseurl, options.htmltotext)
+  article.rawText = await getRawText(article.cleanHtml)
   return article
 }
 
