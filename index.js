@@ -75,7 +75,7 @@ const articleParserFromHtmlString = async function (page, url, options) {
 
   await helpers.setCleanRules(options.readability.cleanRulers || [])
   await helpers.prepDocument(dom.window.document)
-
+  selectiveCleaning(dom.window.document);
   // Title
   article.title = await getTitle(dom.window.document, options.title)
   article.cleanHtml = helpers.grabArticle(dom.window.document).innerHTML
@@ -84,7 +84,33 @@ const articleParserFromHtmlString = async function (page, url, options) {
   article.rawText = await getRawText(article.cleanHtml)
   return article
 }
-
+function selectiveCleaning(document) {
+  const removeTheseTags = ['header', 'footer', 'nav', 'aside', 'form', 'time', 'frame', 'iframe', 'figure', 'figurecaption', 'picture', 'img', 'table', 'style'];
+  removeTheseTags.forEach((tag) => {
+    const tags = document.getElementsByTagName(tag);
+    for (let i = 0; i < tags?.length; i++) {
+     const node = tags[i];
+     node?.parentNode?.removeChild(node);
+    }
+  });
+ 
+  const removeTheseByIds = ['header', 'nav', 'footer', 'modal'];
+  removeTheseByIds.forEach((id) => {
+   const node = document.getElementById(id);
+   if (node?.parentNode) {
+     node.parentNode.removeChild(node);
+   }
+  });
+ 
+  const removeByAriaRole = ['alert', 'menu', 'navigation', 'radio', 'marquee', 'checkbox'];
+  removeByAriaRole.forEach((role) => {
+   const els = document.querySelectorAll(`[role=${role}]`);
+   for (let i = 0; i < els?.length; i++) {
+     const node = els[i];
+     node.parentNode?.removeChild(node);
+    }
+  });
+ }
 /**
  * main article parser module export function
  *
